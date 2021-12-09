@@ -35,8 +35,9 @@ object Day09 extends App {
         } else {
           // Look for an existing basin that's adjacent to the
           // current point.
+          val neighbours = point.adjacent
           val maybeIndex = basins.indexWhere {
-            basin => basin.exists(p => point.adjacent.contains(p))
+            basin => basin.exists(p => neighbours.contains(p))
           }
           maybeIndex match {
             case -1 => basins :+ Set(point)
