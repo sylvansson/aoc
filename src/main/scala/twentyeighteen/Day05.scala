@@ -12,8 +12,12 @@ object Day05 extends App {
   def areOppositePolarities(first: Char, second: Char) =
     first != second && first.toLower == second.toLower
 
+  /**
+   * Slow approach to collapsing. We only destroy one pair of units
+   * per recursive step.
+   */
   @tailrec
-  def collapse(polymer: Array[Char]): Array[Char] = {
+  def slowCollapse(polymer: Array[Char]): Array[Char] = {
     val toCollapse = polymer
       .sliding(2)
       .zipWithIndex
@@ -22,8 +26,41 @@ object Day05 extends App {
       }
     toCollapse match {
       case None => polymer
-      case Some(i) => collapse(polymer.patch(i, Nil, 2))
+      case Some(i) => slowCollapse(polymer.patch(i, Nil, 2))
     }
+  }
+
+  /**
+   * More efficient approach to collapsing. We destroy as many pairs
+   * as possible per recursive step.
+   */
+  @tailrec
+  def collapse(polymer: Array[Char]): Array[Char] = {
+    val toCollapse = polymer
+      .sliding(2)
+      .toList
+      .zipWithIndex
+      .filter {
+        case (Array(a, b), _) => areOppositePolarities(a, b)
+      }
+      // This prevents us from destroying too many units when there are
+      // more than 2 adjacent ones. For example, aAa.
+      .collect {
+        case (Array(_, b), i) if polymer.lift(i + 2).isEmpty || !areOppositePolarities(b, polymer(i + 2)) => i
+      }
+
+    if (toCollapse.isEmpty)
+      return polymer
+
+    val collapsedPolymer = toCollapse
+      .zipWithIndex
+      .foldLeft(polymer) {
+        // We shift the index to account for the fact that other
+        // units have been removed.
+        case (acc, (positionInPolymer, i)) => acc.patch(positionInPolymer - (i * 2), Nil, 2)
+      }
+
+    collapse(collapsedPolymer)
   }
 
   def solvePart1: Int = collapse(polymer).length
