@@ -12,7 +12,7 @@ object Day05 extends App {
   val stackInstructions :+ stackNumbers = instructions.takeWhile(_.trim.nonEmpty)
   val numStacks = stackNumbers.split(" ").last.toInt
   val moveInstructions = instructions.collect {
-    case pattern(Int(n), Int(from), Int(to)) => Move(n, from - 1, to - 1)
+    case pattern(ExtractInt(n), ExtractInt(from), ExtractInt(to)) => Move(n, from - 1, to - 1)
   }
 
   type Stacks = List[List[Char]]
